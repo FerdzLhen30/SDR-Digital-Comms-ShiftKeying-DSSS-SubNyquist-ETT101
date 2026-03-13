@@ -1,283 +1,213 @@
-# 📡 SDR Lab Portfolio: Passband Modulation, DSSS, and Bandpass Undersampling
+# 🎛️ SDR Experiments Notebook: Shift‑Keying, DSSS Robustness, and Bandpass Undersampling
 
-This repository documents a cohesive set of **Digital Communications** and **Software‑Defined Radio (SDR)** experiments. The work spans **ASK/FSK** carrier signaling, **BPSK/QPSK** phase modulation, **Direct‑Sequence Spread Spectrum (DSSS)**, and **sub‑Nyquist (bandpass) sampling**.  
-Each section includes a concise theory recap, an implementation outline, and attached diagrams/waveforms for verification.
-
----
-
-## 📑 Table of Contents
-- [Part A — Digital Passband Modulation (ASK & FSK)](#part-a--digital-passband-modulation-ask--fsk)
-- [Part B — Phase Shift Keying (BPSK & QPSK)](#part-b--phase-shift-keying-bpsk--qpsk)
-- [Part C — Direct‑Sequence Spread Spectrum (DSSS)](#part-c--directsequence-spread-spectrum-dsss)
-- [Part D — SDR & Bandpass Undersampling](#part-d--sdr--bandpass-undersampling)
-- [Results & Data Resources](#results--data-resources)
+A curated set of hands‑on **Digital Communications + SDR** activities built on modular lab blocks and software tooling.  
+The notebook is organized as short, self‑contained modules so your reviewer can jump straight to **signal generation, recovery, and verification** without wading through long narratives.
 
 ---
 
-## Part A — Digital Passband Modulation (ASK & FSK)
+## 🔎 Quick Map
+- #a-passband-shift-keying-ask--fsk
+- #b-phase-encoded-modulation-bpsk--qpsk
+- #c-direct-sequence-spread-spectrum-dsss
+- #d-sdr-toolchain--bandpass-undersampling
+- #results--data-pack
+- #reproducibility-mini-checklist
 
-### A.1 Amplitude Shift Keying (ASK)
-**Concept.** ASK conveys bits by **gating the carrier amplitude**. With a 100 kHz sine carrier and a 2 kHz bitstream as the control, the switch either passes the carrier (“1”) or blocks it (“0”).  
-**Receiver idea.** Because the information rides in the envelope, a **rectifier → LPF → comparator** chain is sufficient to recover the bitstream (rectify to unipolar, low‑pass to extract the envelope, threshold to re‑square).
+---
 
-#### A.1.1 Transmitter (Carrier Gating)
-- **Logic 1:** carry the 100 kHz sine to the output  
-- **Logic 0:** no output (amplitude off)
+## ⚙️ Lab Context (one‑pager)
+- **Carrier bench** around 100 kHz, **baseband** around ~2 kHz  
+- **Scope view**: time traces, zoomed zero‑crossings, and spectrum snapshots  
+- **Recovery blocks**: envelope paths (ASK), ZCD+LPF (FSK), coherent detection (BPSK/QPSK), correlation (DSSS)  
+- **SDR side**: capture → filter → demodulate → compare to theory
 
-#### A.1.2 Receiver (Envelope & Decision)
-1) **Rectification** – convert to unipolar envelope  
-2) **LPF** – suppress residual carrier ripple  
-3) **Comparator** – restore crisp transitions using a DC threshold
+---
 
-#### ASK — Hardware Diagrams
+## A. Passband Shift‑Keying (ASK & FSK)
+
+### A1. ASK — Carrier Gating + Envelope Path
+**Idea.** Bits ride on amplitude only: gate a 100 kHz sine with a 2 kHz bitstream.  
+**RX logic.** Use **rectifier → LPF → comparator** to recover crisp transitions.
+
+**Tx/Rx Diagrams** *(click to expand)*  
 <details>
-<summary>Expand: A‑series diagrams</summary>
+<summary>ASK Hardware + Block Views</summary>
 
-![A‑1](Diagrams/Digital-Pass-and-Modulation-ASK&FSK/IMG_4696.jpg)  
-*Fig. A‑1 — ASK transmitter wiring.*
+- Diagrams/Digital-Pass-and-Modulation-ASK&FSK/IMG_4696.jpg — **Tx wiring sketch**  
+- Diagrams/Digital-Pass-and-Modulation-ASK&FSK/IMG_4697.jpg — **Gate‑based ASK concept**  
+- Diagrams/Digital-Pass-and-Modulation-ASK&FSK/IMG_4699.jpg — **Alternate build**  
+- Diagrams/Digital-Pass-and-Modulation-ASK&FSK/IMG_4699(1)(1).jpg — **Alternate diagram**  
+- Diagrams/Digital-Pass-and-Modulation-ASK&FSK/IMG_4701(1).jpg — **Demod chain layout**  
+- Diagrams/Digital-Pass-and-Modulation-ASK&FSK/IMG_4702(1).jpg — **Envelope block**  
+- Diagrams/Digital-Pass-and-Modulation-ASK&FSK/IMG_4703(1).jpg — **Threshold/cleanup**  
+- Diagrams/Digital-Pass-and-Modulation-ASK&FSK/IMG_4703(1)(1).jpg — **Decision stage**
+</details>
 
-![A‑2](Diagrams/Digital-Pass-and-Modulation-ASK&FSK/IMG_4697.jpg)  
-*Fig. A‑2 — ASK interconnection overview.*
-
-![A‑3](Diagrams/Digital-Pass-and-Modulation-ASK&FSK/IMG_4699.jpg)  
-*Fig. A‑3 — Alternate transmitter build.*
-
-![A‑4](Diagrams/Digital-Pass-and-Modulation-ASK&FSK/IMG_469form Captures
+**Oscilloscope Evidence**  
 <details>
-<summary>Expand: A‑series results</summary>
+<summary>ASK Waveforms</summary>
 
-![A‑9png)  
-*Fig. A‑9 — Output for logic “0”.*
-
-!A‑10.png)  
-*Fig. A‑10 — Output for logic “1”.*
-
-![A‑11](Waveform_Captures/Digital_Passband_Modulation_ASK&FSK/FIGURE4.png)  
-*Fig. A‑11 — ASK at increased carrier frequency.*
-
-![A‑12](Waveform_Captures/Digital_Passband_Modulation_ASK&FSK/FIGURE6.png)  
-*Fig. A‑12 — Envelope‑detected waveform.*
-
-![A‑13](Waveform_Captures/Digital_Passband_Modulation_ASK&FSK/FIGURE8.png)  
-*Fig. A‑13 — Recovered digital output.*
+- Waveform_Captures/Digital_Passband_Modulation_ASK&FSK/FIGURE3(LOGIC0-LOW).png — output at **logic 0**  
+- Waveform_Captures/Digital_Passband_Modulation_ASK&FSK/FIGURE3(LOGIC1-HIGH).png — output at **logic 1**  
+- Waveform_Captures/Digital_Passband_Modulation_ASK&FSK/FIGURE4.png — higher‑fc snapshot  
+- Waveform_Captures/Digital_Passband_Modulation_ASK&FSK/FIGURE6.png — **envelope** after LPF  
+- Waveform_Captures/Digital_Passband_Modulation_ASK&FSK/FIGURE8.png — **reconstructed bits**
 </details>
 
 ---
 
-### A.2 Frequency Shift Keying (FSK)
-**Concept.** FSK encodes bits by **changing the carrier frequency** while keeping the amplitude constant—making it less sensitive to amplitude noise than ASK.
+### A2. FSK — VCO Switching + ZCD Averaging
+**Idea.** Keep amplitude constant; encode bits as **frequencies** f₁/f₂.  
+**RX logic.** **Zero‑crossing detector** generates pulses; **LPF** averages pulse density → DC level → decision.
 
-#### A.2.1 Transmitter (VCO‑Driven)
-- **Bit “0” →** frequency **f₁**  
-- **Bit “1” →** frequency **f₂**
-
-#### A.2.2 Receiver (Zero‑Crossing + Averaging)
-- Zero‑crossing detector produces pulses at each crossing  
-- LPF averages pulse density → higher DC for **f₂** than **f₁** → restore bits
-
-#### FSK — Diagrams
+**Tx/Rx Diagrams**  
 <details>
-<summary>Expand: F‑series diagrams</summary>
+<summary>FSK Hardware + Recovery</summary>
 
-![F‑1](Diagrams/Digital-Pass-and-Modulation-ASKK generation hardware.*
-
-Waveform_Captures/Part1_Results/Part1_resultfig5.jpeg  
-*Fig. F‑2 — Functional FSK diagram.*
-
-!F‑3.jpg)  
-*Fig. F‑3 — Demodulator wiring.*
-
-![F‑4](Diagrams/Digital-Pass-and-Modulation-ASK&FSK/IMG_4713.jpg)  
-* — Zero‑crossing stage.*
-
-!F‑5.jpg)  
-*Fig. F‑5 — Bit reconstruction stage.*
-
-![F‑6](Diagrams/Digital-Pass-and-Modulation-ASK&FSK/IMG_4716.jpg)  
-*Fig. F‑6 — Final recovery connections.*
+- Diagrams/Digital-Pass-and-Modulation-ASK&FSK/IMG_4710.jpg — FSK Tx arrangement  
+- Waveform_Captures/Part1_Results/Part1_resultfig5.jpeg — functional FSK block  
+- Diagrams/Digital-Pass-and-Modulation-ASK&FSK/IMG_4713(1).jpg — ZCD wiring  
+- Diagrams/Digital-Pass-and-Modulation-ASK&FSK/IMG_4713.jpg — ZCD detail  
+- Diagrams/Digital-Pass-and-Modulation-ASK&FSK/IMG_4716(1).jpg — post‑LPF stage  
+- Diagrams/Digital-Pass-and-Modulation-ASK&FSK/IMG_4716.jpg — final restore
 </details>
 
-#### FSK — Waveform Captures
+**Checks & CAL**  
 <details>
-<summary>Expand: F‑series results</summary>
+<summary>Reference Traces</summary>
 
-![F‑7](Waveform_Captures/Part1_Results/Part1_resultfig4.jpeg)  
-*Fig. F‑7 — CAL check (1 Vp‑p).*
-
-![F‑8](Waveform_Captures/Part1_Results/Part1_resultfig5.jpeg)  
-*Fig. F‑8 — 1 kHz reference, 1 ms period.*
-
-![F‑9](Waveform_Captures/Part1_Results/Part1_resultfig6.jpeg)  
-*Fig. F‑9 — Zoomed reference for manual reading.*
+- Waveform_Captures/Part1_Results/Part1_resultfig4.jpeg — CAL 1 Vp‑p  
+- Waveform_Captures/Part1_Results/Part1_resultfig5.jpeg — 1 kHz, 1 ms period  
+- Waveform_Captures/Part1_Results/Part1_resultfig6.jpeg — zoom for manual verification
 </details>
 
 ---
 
-## Part B — Phase Shift Keying (BPSK & QPSK)
+## B. Phase‑Encoded Modulation (BPSK & QPSK)
 
-### B.1 BPSK (Binary Phase Shift Keying)
-**Concept.** Bits modulate **carrier phase**: 0° for “1”, 180° for “0”, at constant amplitude—ideal for low‑SNR links.
+### B1. BPSK — ±Phase With Constant Envelope
+**Tx.** Convert logic to **±V**, multiply with carrier (balanced modulator):  
+- “1” → **0°**, “0” → **180°**.  
+**Rx.** **Coherent product detection** with a synchronized LO → LPF → comparator.
 
-#### B.1.1 Transmitter (Balanced Modulator)
-- Convert 0/5 V logic to **±V (bipolar)**  
-- Multiply bipolar data with carrier → BPSK (0°/180°)
-
-#### B.1.2 Receiver (Coherent Product Detection)
-- Multiply receive signal with synchronized LO  
-- LPF the product to baseband  
-- Comparator to restore clean logic
-
-#### BPSK — Diagrams
+**Diagrams**  
 <details>
-<summary>Expand: B‑series diagrams</summary>
+<summary>BPSK Builds</summary>
 
-![B‑1](Diagrams/PhaseB‑2](Diagrams/Phase-Shift-Keying-BPSK&QPSK/IMG_4721.jpg)  
-*Fig. B‑2 — Modulator block view.*
-
-![B‑3](Diagrams/Phase-Shift-Keying-BPSK&QPSK/IMG_4723.jpg)  
-*Fig. B‑3 — Coherent detector wiring.*
-
-![B‑4](Diagrams/Phase-Shift-Keying-BPSK&QPSK/IMG_4724.jpg)  
-*Fig. B‑4 — Product detection diagram.*
+- Diagrams/Phase-Shift-Keying-BPSK&QPSK/IMG_4721(1).jpg — Tx layout  
+- Diagrams/Phase-Shift-Keying-BPSK&QPSK/IMG_4721.jpg — modulator schematic  
+- Diagrams/Phase-Shift-Keying-BPSK&QPSK/IMG_4723.jpg — coherent Rx wiring  
+- Diagrams/Phase-Shift-Keying-BPSK&QPSK/IMG_4724.jpg — product detector
 </details>
 
-#### BPSK — Waveform Captures
+**Waveforms**  
 <details>
-<summary>Expand: B‑series results</summary>
+<summary>BPSK Scopes</summary>
 
-![B‑5](Waveform_Captures/Phase_Shift_Keying_BPSK&QPSK/PART-A-fig2.png)  
-*Fig. B‑5 — BPSK output.*
-
-![B‑6](Waveform_Captures/Phase_Shift_Keying_BPSK&QPSK/PART-B-fig4.png)  
-*Fig. B‑6 — Coherent demodulation trace.*
-
-![B‑7](Waveform_Captures/Phase_Shift_Keying_BPSK&QPSK/PART-C-fig6.png)  
-*Fig. B‑7 — Recovered bitstream.*
+- Waveform_Captures/Phase_Shift_Keying_BPSK&QPSK/PART-A-fig2.png — modulated output  
+- Waveform_Captures/Phase_Shift_Keying_BPSK&QPSK/PART-B-fig4.png — coherent multiply  
+- Waveform_Captures/Phase_Shift_Keying_BPSK&QPSK/PART-C-fig6.png — bit recovery
 </details>
 
 ---
 
-### B.2 QPSK (Quadrature PSK)
-**Concept.** QPSK maps **two bits per symbol** to four phases (e.g., 45°, 135°, 225°, 315°). I/Q paths halve the per‑branch bit rate while doubling throughput in the same bandwidth.
+### B2. QPSK — Two Bits per Symbol via I/Q
+**Tx.** Split serial bits → I & Q; modulate with **cos ωt** and **sin ωt**, then sum.  
+**Rx.** Dual product detectors (I/Q) → LPFs → re‑serialize.
 
-#### B.2.1 Transmitter (I/Q Branches)
-- Split serial bits → **I** and **Q**  
-- Modulate **cos ωt** with I, **sin ωt** with Q  
-- Sum I+Q to produce QPSK waveform
-
-#### B.2.2 Receiver (Dual Coherent Paths)
-- Multiply with cos ωt → I, sin ωt → Q  
-- LPF both, then re‑serialize to bits
-
-#### QPSK — Diagrams & Waveforms
+**Docs & Proofs**  
 <details>
-<summary>Expand: Q‑series documentation</summary>
+<summary>QPSK Diagrams & Scopes</summary>
 
-![Q‑TX1](Diagrams/Phase-Shift-Keying-BPSK&QPSK/IMG_4733.jpg)  
-![Q‑TX2](Diagrams/Phase-Shift-Keying-BPSK&QPSK/IMG_4734.jpg)  
-![Q‑TX3](Diagrams/Phase-Shift-Keying-BPSK&QPSK/IMG_4735.jpg)  
-![Q‑TX4](Diagrams/Phase-Shift-Keying-BPSK&QPSK/IMG_4736.jpg](Diagrams/Phase-Shift-Keying-BPSK&QPSK/IMG_4738.jpg)  
-![Q‑TX8](Diagrams/Phase-Shift-Keying-BPSK&QPSK/IMG_4739.jpg)  
-![Q‑Pick1](Diagrams/Phase-Shift-Keying-BPSK&QPSK/IMG_4741.jpg)  
-![Q‑Pick2](Diagrams/Phase-Shift-Keying-BPSK&QPSK/IMG_4742t-Keying-BPSK&QPSK/IMG_4743.jpg)
+- Diagrams/Phase-Shift-Keying-BPSK&QPSK/IMG_4733.jpg … /IMG_4743.jpg — IQ generation / selection chain
 
-![Q‑W1](Waveform_Captures/Phase_Shift_Keying_BPSK&QPSK/Screenshot2026-03-11043043.png)  
-![Q‑W2](Waveform_Captures/Phase_Shift_Keying_BPSK&QPSK/Screenshot2026-03-11043056.png)  
-![Q‑W3](Waveform_Captures/Phase_Shift_Keying_BPSK&QPSK/Screenshot2026-03-11043102.png)  
-![Q‑W4](Waveform_Captures/Phase_Shift_Keying_BPSK&QPSK/Screenshot2026-03-11043109.png)  
-![Q‑Sel0](Waveform_Captures/Phase_Shift_Keying_BPSK&QPSK/Screenshot2026-03-11043114.png)  
-*Q‑Sel0 — Phase discrimination at 0°.*
-
-![Q‑Sel180](Waveform_Captures/Phase_Shift_Keying_BPSK&QPSK/Screenshot2026-03-11043120.png)  
-*Q‑Sel180 — Phase discrimination at 180°.*
+- Waveform_Captures/Phase_Shift_Keying_BPSK&QPSK/Screenshot2026-03-11043043.png  
+- Waveform_Captures/Phase_Shift_Keying_BPSK&QPSK/Screenshot2026-03-11043056.png  
+- Waveform_Captures/Phase_Shift_Keying_BPSK&QPSK/Screenshot2026-03-11043102.png  
+- Waveform_Captures/Phase_Shift_Keying_BPSK&QPSK/Screenshot2026-03-11043109.png  
+- Waveform_Captures/Phase_Shift_Keying_BPSK&QPSK/Screenshot2026-03-11043114.png — **phase selection (0°)**  
+- Waveform_Captures/Phase_Shift_Keying_BPSK&QPSK/Screenshot2026-03-11043120.png — **phase selection (180°)**
 </details>
 
 ---
 
-## Part C — Direct‑Sequence Spread Spectrum (DSSS)
+## C. Direct‑Sequence Spread Spectrum (DSSS)
 
-**Idea.** Multiply the bitstream by a **high‑rate PN sequence** to widen the spectrum; at the receiver, **correlate** with a synchronized PN to collapse back to narrowband.
+**TX.** Multiply message by a **high‑rate PN** (chips ≫ bit rate) → wideband, low PSD.  
+**RX.** Regenerate + align PN; multiply to **despread**; LPF + threshold for final bits.
 
-### C.1 Spreading (TX)
-- PN chips ≫ bit rate  
-- Message ⊕ PN (XOR or multiplier):  
-  - bit 0 → PN unchanged  
-  - bit 1 → PN inverted  
-- Result: wideband, low‑PSD signal
-
-### C.2 Despreading (RX)
-- Align an identical PN generator  
-- Multiply/XOR with incoming DSSS → original data appears  
-- LPF + thresholding clean the recovered bits
-
-#### DSSS — Diagrams
+**Diagrams**  
 <details>
-<summary>Expand: C‑series diagrams</summary>
+<summary>DSSS Build Sheets</summary>
 
-![C‑1](Diagrams/Direct-Sequence-Spread-Spectrum-DSSS/IMG_4749.jpg)  
-![C‑2](Diagrams/Direct-Sequence-Spread-Spectrum-DSSS/IMG_4750.jpg)  
-![C‑3](Diagrams/Direct-Sequence-Spread-Spectrum-DSSS/IMG_4754.jpg)  
-![C‑4](Diagrams/Direct-Sequence-Spread-Spectrum-DSSS/IMG_4755.jpg)  
-![C‑5](Diagrams/Direct-Sequence-Spread-Spectrum-DSSS/IMG_4758.jpg)  
-![C‑6](Diagrams/Direct-Sequence-Spread-Spectrum-DSSS/IMG_4761.jpg)
+- Diagrams/Direct-Sequence-Spread-Spectrum-DSSS/IMG_4749.jpg  
+- Diagrams/Direct-Sequence-Spread-Spectrum-DSSS/IMG_4750.jpg  
+- Diagrams/Direct-Sequence-Spread-Spectrum-DSSS/IMG_4754.jpg  
+- Diagrams/Direct-Sequence-Spread-Spectrum-DSSS/IMG_4755.jpg  
+- Diagrams/Direct-Sequence-Spread-Spectrum-DSSS/IMG_4758.jpg  
+- Diagrams/Direct-Sequence-Spread-Spectrum-DSSS/IMG_4761.jpg
 </details>
 
-#### DSSS — Waveform Captures
+**Evidence**  
 <details>
-<summary>Expand: C‑series results</summary>
+<summary>DSSS Scopes</summary>
 
-![C‑TX](Waveform_Captures/Direct_Sequence_Spread_Spectrum_DSSS/FIG1.png)  
-*Fig. C‑TX — DSSS transmit signal.*
-
-![C‑REC1](Waveform_Captures/Direct_Sequence_Spread_Spectrum_DSSS/fig4.png)  
-![C‑REC2](Waveform_Captures/Direct_Sequence_Spread_Spectrum_DSSS/fig7.png)  
-*Fig. C‑REC — Product‑detector based recovery.*
-
-![C‑INT1](Waveform_Captures/Direct_Sequence_Spread_Spectrum_D, sampling and signal translation can be configured in software. For **band‑limited passbands**, deliberate undersampling (sub‑Nyquist) can map a high‑frequency band into a lower **intermediate frequency (IF)** via aliasing—provided the sampling rate is chosen to avoid overlap.
-
-### D.1 Architecture Sketch
-- Conventional: \( f_s > 2 f_{\max} \)  
-- Bandpass case: \( f_s > 2B \) (where **B** is signal bandwidth), with careful selection so the aliased band lands cleanly at a non‑overlapping IF.
-
-### D.2 Practical Flow
-- Sample‑and‑Hold → ADC  
-- Software (FIR/IIR) performs the **channel selection**, **demodulation**, and **bit recovery**  
-- A single RF front‑end can decode different schemes (ASK/FSK/BPSK) by **changing only the software chain**
-
-#### SDR & Undersampling — Diagrams
-<details>
-<summary>Expand: D‑series diagrams</summary>
-
-![D‑1](Diagramsgrams/SDR&Undersampling/IMG_4767.jpg  
-Diagrams/SDR&Undersampling/IMG_4771.jpg  
-!D‑4.jpg)  
-![D‑5](Diagrams/SDR&Undersampling/IMG_4774.jpg)
-</details>
-
-#### SDR & Undersampling — Waveform Captures
-<details>
-<summary>Expand: D‑series results</summary>
-
-![D‑CAL1](Waveform_Captures/Part1_Results/Part1_resultfig4.jpeg)  
-![D‑CAL2](Waveform_Captures/Part1_Results/Part1_resultfig5.jpeg)  
-![D‑CAL3](Waveform_Captures/Part1_Results/Part1_resultfig6.jpeg)  
-*D‑CAL — Internal calibration traces (1 Vp‑p, 1 kHz, period verification).*
+- Waveform_Captures/Direct_Sequence_Spread_Spectrum_DSSS/FIG1.png — DSSS Tx  
+- Waveform_Captures/Direct_Sequence_Spread_Spectrum_DSSS/fig4.png — correlation path  
+- Waveform_Captures/Direct_Sequence_Spread_Spectrum_DSSS/fig7.png — despread snapshot  
+- Waveform_Captures/Direct_Sequence_Spread_Spectrum_DSSS/fig8.png — interference case  
+- Waveform_Captures/Direct_Sequence_Spread_Spectrum_DSSS/fig10(1).png — interference case (alt)
 </details>
 
 ---
 
-## Results & Data Resources
+## D. SDR Toolchain & Bandpass Undersampling
 
-- 📕 **Complete Experimental Data / Q&A (PDF):**  
+**Why undersample?** For a **band‑limited** passband, you can select **fₛ** so the band aliases to a clean **IF** in a lower Nyquist zone:
+- Classical Nyquist: \( f_s > 2f_{\max} \)  
+- Bandpass case: \( f_s > 2B \) (B = bandwidth), with alias planning to avoid overlap.
+
+**Workflow**
+1) Sample‑and‑Hold → ADC  
+2) Digital channel selection (FIR/IIR)  
+3) Software demod (ASK/FSK/BPSK change = software swap)
+
+**Diagrams**  
+<details>
+<summary>Undersampling Sheets</summary>
+
+- Diagrams/SDR&Undersampling/IMG_4767(1).jpg  
+- Diagrams/SDR&Undersampling/IMG_4767.jpg  
+- Diagrams/SDR&Undersampling/IMG_4771.jpg  
+- Diagrams/SDR&Undersampling/IMG_4771(1).jpg  
+- Diagrams/SDR&Undersampling/IMG_4774.jpg
+</details>
+
+**Scopes**  
+<details>
+<summary>Undersampling Captures</summary>
+
+- Waveform_Captures/Part1_Results/Part1_resultfig4.jpeg — CAL 1 Vp‑p  
+- Waveform_Captures/Part1_Results/Part1_resultfig5.jpeg — 1 kHz reference  
+- Waveform_Captures/Part1_Results/Part1_resultfig6.jpeg — zoomed ref
+</details>
+
+---
+
+## 📦 Results & Data Pack
+- **Compiled Q&A / data sheet (PDF):**  
   `Data/Q&A-Digital-Comms-SDR-Advanced-Modulation-Sub-Nyquist-Signal-Analysis.pdf`
 
-- 🗂️ **Browse all captured waveforms:**  
+- **All oscilloscope media:**  
   `Waveform_Captures/`
 
 ---
 
-### Notes
-- Filenames and paths above match the current repository layout you provided.  
-- If you rename or move images, update the Markdown links accordingly.  
-- This write‑up is deliberately **rephrased and reorganized** to be original while keeping your measured content and figure references intact.
-
+## ✅ Reproducibility Mini‑Checklist
+- [ ] Probes compensated, CAL verified  
+- [ ] fc (~100 kHz) and fm (~2 kHz) confirmed  
+- [ ] ASK: envelope path thresholds tuned  
+- [ ] FSK: ZCD pulses averaged to stable DC levels  
+- [ ] BPSK/QPSK: coherent LO in lock, LPFs correct  
+- [ ] DSSS: PN aligned before correlation  
+- [ ] Undersampling: alias plan prevents band overlap
